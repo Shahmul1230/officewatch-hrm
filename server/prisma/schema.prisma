@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum AttendanceStatus {
+  CHECKED_IN
+  CHECKED_OUT
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(EMPLOYEE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee?
+}
+
+model Employee {
+  id         String   @id @default(cuid())
+  employeeCode String? @unique
+  userId     String   @unique
+  pcName     String?
+  department String?
+  position   String?
+  isOnline   Boolean  @default(false)
+  lastSeenAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id])
+  attendances   Attendance[]
+  screenshots   Screenshot[]
+  leaveRequests LeaveRequest[]
+  attendanceAdjustments AttendanceAdjustment[]
+}
+
+model Attendance {
+  id           String           @id @default(cuid())
+  employeeId   String
+  checkInTime  DateTime?
+  checkOutTime DateTime?
+  status       AttendanceStatus
+  totalMinutes Int?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Screenshot {
+  id         String   @id @default(cuid())
+  employeeId String
+  imageUrl   String
+  pcName     String?
+  capturedAt DateTime @default(now())
+
+  isSaved   Boolean   @default(false)
+  savedAt   DateTime?
+  expiresAt DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model LeaveType {
+  id              String   @id @default(cuid())
+  name            String
+  code            String   @unique
+  yearlyAllowance Float    @default(0)
+  isPaid          Boolean  @default(true)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  leaveRequests LeaveRequest[]
+}
+
+model LeaveRequest {
+  id          String      @id @default(cuid())
+  employeeId  String
+  leaveTypeId String
+  startDate   DateTime
+  endDate     DateTime
+  days        Float
+  reason      String?
+  status      LeaveStatus @default(PENDING)
+  adminNote   String?
+  reviewedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+}
+
+model WorkPolicy {
+  id              String   @id @default(cuid())
+  name            String   @default("Default Work Policy")
+
+  // 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday,
+  // 4 = Thursday, 5 = Friday, 6 = Saturday
+  // Example: "5,6" means Friday + Saturday weekend
+  weekendDays     String   @default("5,6")
+
+  shiftStartTime  String   @default("08:00")
+  shiftEndTime    String   @default("17:00")
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  targetId  String?
+  createdAt DateTime @default(now())
+}
+
+model AttendanceAdjustment {
+  id              String   @id @default(cuid())
+  employeeId      String
+  date            DateTime
+  status          String
+  checkInTime     DateTime?
+  checkOutTime    DateTime?
+  totalMinutes    Int?
+  isPayable       Boolean  @default(false)
+  reason          String?
+  createdByAdminId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, date])
+}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';"
+    />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>OfficeWatch Employee Agent</title>
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <main class="app">
+      <section class="left-panel">
+        <div class="brand">
+          <div class="logo">OW</div>
+
+          <div>
+            <h1>OfficeWatch</h1>
+            <p>Employee Agent</p>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <h2>What this app does</h2>
+
+          <p>
+            This app runs on your office PC and connects with OfficeWatch HRM.
+            Screenshot and live screen monitoring only work when you are checked
+            in.
+          </p>
+        </div>
+
+        <div class="info-box muted">
+          <h2>Important</h2>
+
+          <p>
+            Attendance, leave, check-in and check-out are handled from Employee
+            Portal. This agent only handles PC monitoring.
+          </p>
+        </div>
+      </section>
+
+      <section class="right-panel">
+        <div id="errorBox" class="error-box hidden"></div>
+
+        <div id="loginView" class="card">
+          <h2>Connect Employee Agent</h2>
+
+          <p class="subtext">
+            Login with the employee account created by admin.
+          </p>
+
+          <form id="loginForm">
+            <label>Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="employee@officewatch.com"
+              required
+            />
+
+            <label>Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Password"
+              required
+            />
+
+            <button id="loginBtn" type="submit">Connect Agent</button>
+          </form>
+        </div>
+
+        <div id="dashboardView" class="card hidden">
+          <div class="dashboard-header">
+            <div>
+              <h2 id="employeeName">Employee</h2>
+              <p id="employeeEmail">employee@officewatch.com</p>
+            </div>
+
+            <div class="header-actions">
+              <button id="refreshBtn" class="secondary-btn">Refresh</button>
+              <button id="minimizeBtn" class="secondary-btn">Minimize</button>
+              <button id="logoutBtn" class="danger-btn">Logout</button>
+            </div>
+          </div>
+
+          <div class="identity-grid">
+            <div>
+              <span>Employee ID</span>
+              <strong id="employeeCode">----</strong>
+            </div>
+
+            <div>
+              <span>PC Name</span>
+              <strong id="pcName">-</strong>
+            </div>
+
+            <div>
+              <span>Mode</span>
+              <strong id="mode">TEST</strong>
+            </div>
+          </div>
+
+          <div class="status-grid">
+            <div class="status-card">
+              <span>Agent Connection</span>
+              <strong id="agentStatus" class="badge inactive">Agent Offline</strong>
+            </div>
+
+            <div class="status-card">
+              <span>Attendance</span>
+              <strong id="attendanceStatus" class="badge inactive">Checked Out</strong>
+            </div>
+
+            <div class="status-card">
+              <span>Screenshot</span>
+              <strong id="monitoringStatus" class="badge inactive">Screenshot Stopped</strong>
+            </div>
+
+            <div class="status-card">
+              <span>Live Screen</span>
+              <strong id="liveStatus" class="badge inactive">Live Screen Stopped</strong>
+            </div>
+          </div>
+
+          <div class="work-state">
+            <h3>Current Work State</h3>
+            <p id="workStateText">
+              Checking current attendance status...
+            </p>
+          </div>
+
+          <div class="timeline-grid">
+            <div>
+              <span>Last Screenshot</span>
+              <strong id="lastScreenshotAt">-</strong>
+            </div>
+
+            <div>
+              <span>Next Screenshot</span>
+              <strong id="nextScreenshotAt">-</strong>
+            </div>
+
+            <div>
+              <span>Last Live Frame</span>
+              <strong id="lastLiveFrameAt">-</strong>
+            </div>
+
+            <div>
+              <span>Last Sync</span>
+              <strong id="lastSyncAt">-</strong>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>No manual screenshot button.</strong>
+            Screenshots are automatic and random when employee is checked in.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
