@@ -46,7 +46,8 @@ function App() {
   const [manualRecords, setManualRecords] = useState([]);
 
   const [globalSearch, setGlobalSearch] = useState("");
-  const [selectedEmployeeForAction, setSelectedEmployeeForAction] = useState(null);
+  const [selectedEmployeeForAction, setSelectedEmployeeForAction] =
+    useState(null);
 
   const [openModules, setOpenModules] = useState({});
 
@@ -142,12 +143,16 @@ function App() {
 
   const filteredLeaveRequests = useMemo(() => {
     if (!selectedEmployeeIds) return leaveRequests;
-    return leaveRequests.filter((leave) => selectedEmployeeIds.has(leave.employeeId));
+    return leaveRequests.filter((leave) =>
+      selectedEmployeeIds.has(leave.employeeId)
+    );
   }, [leaveRequests, selectedEmployeeIds]);
 
   const filteredManualRecords = useMemo(() => {
     if (!selectedEmployeeIds) return manualRecords;
-    return manualRecords.filter((item) => selectedEmployeeIds.has(item.employeeId));
+    return manualRecords.filter((item) =>
+      selectedEmployeeIds.has(item.employeeId)
+    );
   }, [manualRecords, selectedEmployeeIds]);
 
   const formatEmployeeLabel = (emp) => {
@@ -184,6 +189,22 @@ function App() {
     if (mins === 0) return `${hrs}h`;
 
     return `${hrs}h ${mins}m`;
+  };
+
+  const getTodayAttendanceForEmployee = (employeeId) => {
+    if (!employeeId) return null;
+
+    const today = new Date().toDateString();
+
+    const todayRecords = attendances
+      .filter((att) => {
+        if (att.employeeId !== employeeId || !att.checkInTime) return false;
+
+        return new Date(att.checkInTime).toDateString() === today;
+      })
+      .sort((a, b) => new Date(b.checkInTime) - new Date(a.checkInTime));
+
+    return todayRecords[0] || null;
   };
 
   const toggleModule = (key) => {
@@ -657,7 +678,10 @@ function App() {
   useEffect(() => {
     if (!token) return;
 
-    const socket = io(API_BASE);
+    const socket = io(API_BASE, {
+      transports: ["websocket", "polling"],
+    });
+
     socketRef.current = socket;
 
     socket.on("connect", () => {
@@ -674,6 +698,10 @@ function App() {
     });
 
     socket.on("employee-status-updated", () => {
+      fetchDashboardData();
+    });
+
+    socket.on("employee-screenshot-captured", () => {
       fetchDashboardData();
     });
 
@@ -887,13 +915,16 @@ function App() {
                           <div>
                             <h2>Create Employee</h2>
                             <p>
-                              Admin must create employee first. Then employee can
-                              login from employee portal.
+                              Admin must create employee first. Then employee
+                              can login from employee portal.
                             </p>
                           </div>
                         </div>
 
-                        <form className="employee-form" onSubmit={createEmployee}>
+                        <form
+                          className="employee-form"
+                          onSubmit={createEmployee}
+                        >
                           <input
                             placeholder="Employee ID e.g. 0001"
                             value={employeeForm.employeeCode}
@@ -993,7 +1024,8 @@ function App() {
                               <th>Department</th>
                               <th>Position</th>
                               <th>Status</th>
-                              <th>Last Seen</th>
+                              <th>Today Check In</th>
+                              <th>Today Check Out</th>
                               <th>Action</th>
                             </tr>
                           </thead>
@@ -1001,6 +1033,8 @@ function App() {
                           <tbody>
                             {filteredEmployees.map((emp) => {
                               const item = normalizeEmployee(emp);
+                              const todayAttendance =
+                                getTodayAttendanceForEmployee(item.id);
 
                               return (
                                 <tr key={item.id}>
@@ -1019,7 +1053,12 @@ function App() {
                                       {item.isOnline ? "Online" : "Offline"}
                                     </span>
                                   </td>
-                                  <td>{formatDateTime(item.lastSeenAt)}</td>
+                                  <td>
+                                    {formatTime(todayAttendance?.checkInTime)}
+                                  </td>
+                                  <td>
+                                    {formatTime(todayAttendance?.checkOutTime)}
+                                  </td>
                                   <td>
                                     <div className="action-buttons">
                                       <button
@@ -1061,7 +1100,7 @@ function App() {
 
                             {filteredEmployees.length === 0 && (
                               <tr>
-                                <td colSpan="9">No employees found.</td>
+                                <td colSpan="10">No employees found.</td>
                               </tr>
                             )}
                           </tbody>
