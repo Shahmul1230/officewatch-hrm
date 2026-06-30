@@ -13,6 +13,10 @@ const normalizeEmployeeCode = (value) => {
   return raw.toUpperCase();
 };
 
+const isValidGmail = (email) => {
+  return /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(String(email || "").trim());
+};
+
 const getEmployees = async (req, res) => {
   try {
     const employees = await prisma.employee.findMany({
@@ -100,6 +104,13 @@ const createEmployee = async (req, res) => {
     const cleanEmployeeCode = normalizeEmployeeCode(employeeCode);
     const cleanName = String(name || "").trim();
     const cleanEmail = String(email || "").trim().toLowerCase();
+    if (!isValidGmail(cleanEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "Employee email must be a valid Gmail address ending with @gmail.com.",
+      });
+    }
+
     const cleanPassword = String(password || "").trim();
 
     if (!cleanEmployeeCode || !cleanName || !cleanEmail || !cleanPassword) {
@@ -232,6 +243,13 @@ const updateEmployee = async (req, res) => {
     }
 
     const cleanEmail = email ? String(email).trim().toLowerCase() : employee.user.email;
+    if (!isValidGmail(cleanEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "Employee email must be a valid Gmail address ending with @gmail.com.",
+      });
+    }
+
 
     if (cleanEmail !== employee.user.email) {
       const duplicateEmail = await prisma.user.findUnique({

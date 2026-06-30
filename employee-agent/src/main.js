@@ -7,7 +7,7 @@ const screenshot = require("screenshot-desktop");
 const { io } = require("socket.io-client");
 const FormData = require("form-data");
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://ow-api.pixelstack.cloud";
 
 /*
   TEST mode: screenshot every 30-60 seconds.
