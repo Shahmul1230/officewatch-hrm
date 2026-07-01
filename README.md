@@ -14,7 +14,6 @@ The system includes a separate **Admin Dashboard**, **Employee Portal**, **Backe
 |---|---|
 | Admin Dashboard | https://officewatch-hrm.vercel.app |
 | Employee Portal | https://officewatch-portal.vercel.app |
-| Backend API | https://ow-api.pixelstack.cloud |
 
 ---
 
